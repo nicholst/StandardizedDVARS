@@ -3,7 +3,7 @@
 # Script: DVARS.sh
 # Purpose: Create standardized version of DVARS
 # Author: T. Nichols
-# Version: $Id: DVARS.sh,v 1.2 2012/10/26 22:17:19 nichols Exp $
+# Version: $Id$
 #
 
 
@@ -130,20 +130,20 @@ DiffSDmean=$(fslstats $Tmp-DiffSDhat -k $Tmp-MeanBrain -M)
 
 echo -n "."
 
-# Compute temporal difference time series
+# Compute temporal difference squared time series
 nVol=$(fslnvols "$FUNC")
 fslroi "$FUNC" $Tmp-FUNC0 0 $((nVol-1))
 fslroi "$FUNC" $Tmp-FUNC1 1 $nVol
+fslmaths $Tmp-FUNC0 -sub $Tmp-FUNC1 -sqr $Tmp-Diff -odt float
 
 echo -n "."
 
 # Compute DVARS, no standization
-fslmaths $Tmp-FUNC0 -sub $Tmp-FUNC1                $Tmp-Diff -odt float
-fslstats -t $Tmp-Diff       -k $Tmp-MeanBrain -S > $Tmp-DiffSD.dat
+fslstats -t $Tmp-Diff       -k $Tmp-MeanBrain -M > $Tmp-DiffVar.dat
 
 if [ "$AllVers" = "" ] ; then
     # Standardized
-    awk '{printf("%g\n",$1/'"$DiffSDmean"')}' $Tmp-DiffSD.dat > "$OUT"
+    awk '{printf("%g\n",sqrt($1)/'"$DiffSDmean"')}' $Tmp-DiffVar.dat > "$OUT"
 else
     # Compute DVARS, based on voxel-wise standardized image
     fslmaths $Tmp-FUNC0 -sub $Tmp-FUNC1 -div $Tmp-DiffSDhat $Tmp-DiffVxStdz
