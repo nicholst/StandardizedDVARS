@@ -3,7 +3,8 @@
 # Script: DVARS.sh
 # Purpose: Create standardized version of DVARS
 # Author: T. Nichols
-# Version: $Id$ $Format:%ci$ ($Format:%h$)
+# Version: $Format:%ci$
+#          http://github.com/nicholst/DVARS/commit/$Format:%H$
 #
 
 
