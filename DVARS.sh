@@ -34,13 +34,13 @@ Options
     -all Produce 2 additional versions of DVARS.
 
 Creates standardized version of DVARS, normalizing according to the expected 
-standard deviation of DVARS under an AR1 model. DVARSout, consists of plain text 
-file with a normalized version of DVARS, scaled so that it is approximately 1 if 
+value of DVARS under an AR1 model. DVARSout, consists of plain text file with
+this normalized version of DVARS, scaled so that it is approximately 1 if  
 there are no artifacts. 
 
 With the -all option, 2 additional columns are added to DVARSout.  The 2nd column
-is the raw DVARS with no scaling (precisely the standard deviation of the temporal 
-difference).  The 3rd is the precision-normalized DVARS:  Before taking the SD, 
+is the raw DVARS with no scaling (precisely the root mean square (RMS) of the temporal 
+difference).  The 3rd is the precision-normalized DVARS:  Before taking the RMS, 
 temporal difference images are standardized voxel-wise giving a more precisely
 normalized DVARS measure.  A side effect, however, is that high-variance parts of 
 the image are down-weighted relative to low-variance areas.
@@ -135,23 +135,23 @@ echo -n "."
 nVol=$(fslnvols "$FUNC")
 fslroi "$FUNC" $Tmp-FUNC0 0 $((nVol-1))
 fslroi "$FUNC" $Tmp-FUNC1 1 $nVol
-fslmaths $Tmp-FUNC0 -sub $Tmp-FUNC1 -sqr $Tmp-Diff -odt float
+fslmaths $Tmp-FUNC0 -sub $Tmp-FUNC1 -sqr $Tmp-DiffSq -odt float
 
 echo -n "."
 
 # Compute DVARS, no standization
-fslstats -t $Tmp-Diff       -k $Tmp-MeanBrain -M > $Tmp-DiffVar.dat
+fslstats -t $Tmp-DiffSq -k $Tmp-MeanBrain -M > $Tmp-DiffVar.dat
 
 if [ "$AllVers" = "" ] ; then
     # Standardized
     awk '{printf("%g\n",sqrt($1)/'"$DiffSDmean"')}' $Tmp-DiffVar.dat > "$OUT"
 else
     # Compute DVARS, based on voxel-wise standardized image
-    fslmaths $Tmp-FUNC0 -sub $Tmp-FUNC1 -div $Tmp-DiffSDhat $Tmp-DiffVxStdz
-    fslstats -t $Tmp-DiffVxStdz -k $Tmp-MeanBrain -S > $Tmp-DiffVxStdzSD.dat
+    fslmaths $Tmp-FUNC0 -sub $Tmp-FUNC1 -div $Tmp-DiffSDhat -sqr $Tmp-DiffSqVxStdz
+    fslstats -t $Tmp-DiffSqVxStdz -k $Tmp-MeanBrain -M | awk '{print sqrt($1)}' > $Tmp-DiffVxStdzSD.dat
 
     # Sew it all together
-    awk '{printf("%g\t%g\n",$1/'"$DiffSDmean"',$1)}' $Tmp-DiffSD.dat > $Tmp-DVARS
+    awk '{printf("%g\t%g\n",sqrt($1)/'"$DiffSDmean"',sqrt($1))}' $Tmp-DiffVar.dat > $Tmp-DVARS
     paste $Tmp-DVARS $Tmp-DiffVxStdzSD.dat > "$OUT"
 fi
 
