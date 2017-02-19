@@ -3,7 +3,7 @@
 # Script: DVARS.sh
 # Purpose: Create standardized version of DVARS
 # Author: T. Nichols
-# Version: $Id$
+# Version: $Id$ $Format:%ci$ ($Format:%h$)
 #
 
 
@@ -44,7 +44,7 @@ temporal difference images are standardized voxel-wise giving a more precisely
 normalized DVARS measure.  A side effect, however, is that high-variance parts of 
 the image are down-weighted relative to low-variance areas.
 _________________________________________________________________________
-\$Id: DVARS.sh,v 1.2 2012/10/26 22:17:19 nichols Exp $
+\$Id$
 EOF
 exit
 }
